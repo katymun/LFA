@@ -1,10 +1,10 @@
-package lab1;
+package RegularGrammars;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainLab1 {
+public class Main {
     public static void main(String[] args) {
         int nrWords = 5;  //how many words/strings to be generated
         List<String> Vn = Arrays.asList("S", "A", "B", "C");

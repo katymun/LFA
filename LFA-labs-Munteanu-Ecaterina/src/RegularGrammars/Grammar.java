@@ -1,4 +1,4 @@
-package lab1;
+package RegularGrammars;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,9 +68,42 @@ public class Grammar {
                 delta.add(new Transition(leftSide, rightSide, F));
             } else if (rightSide.length() > 1) {
                 // A → aB
-                delta.add(new Transition(leftSide, String.valueOf(rightSide.charAt(0)), String.valueOf(rightSide.charAt(1))));
+                delta.add(new Transition(leftSide, String.valueOf(rightSide.charAt(0)),
+                        String.valueOf(rightSide.charAt(1))));
             }
         }
         return new FiniteAutomaton(Q, Sigma, delta, q0, F);
+    }
+
+    public List<String> getVn() {
+        return Vn;
+    }
+
+    public void setVn(List<String> vn) {
+        Vn = vn;
+    }
+
+    public List<String> getVt() {
+        return Vt;
+    }
+
+    public void setVt(List<String> vt) {
+        Vt = vt;
+    }
+
+    public List<String> getP() {
+        return P;
+    }
+
+    public void setP(List<String> p) {
+        P = p;
+    }
+
+    public String getS() {
+        return S;
+    }
+
+    public void setS(String s) {
+        S = s;
     }
 }

@@ -1,4 +1,4 @@
-package lab1;
+package RegularGrammars;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,7 +29,6 @@ public class FiniteAutomaton {
 
             Set<String> nextStates = new HashSet<>();
 
-            // Find the transition for each current state and input symbol
             for (String currentState : currentStates) {
                 List<Transition> transitions = findTransitions(currentState, inputSymbol);
                 for (Transition transition : transitions) {
@@ -38,20 +37,16 @@ public class FiniteAutomaton {
             }
 
             if (nextStates.isEmpty()) {
-                // No valid transition found
                 return false;
             }
 
             currentStates = nextStates;
         }
-
-        // Check if any of the final states is in the set of accepting states
         for (String currentState : currentStates) {
             if (F.contains(currentState)) {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -64,5 +59,45 @@ public class FiniteAutomaton {
             }
         }
         return result;
+    }
+
+    public List<String> getQ() {
+        return Q;
+    }
+
+    public void setQ(List<String> q) {
+        Q = q;
+    }
+
+    public List<String> getSigma() {
+        return Sigma;
+    }
+
+    public void setSigma(List<String> sigma) {
+        Sigma = sigma;
+    }
+
+    public List<Transition> getDelta() {
+        return delta;
+    }
+
+    public void setDelta(List<Transition> delta) {
+        this.delta = delta;
+    }
+
+    public String getQ0() {
+        return q0;
+    }
+
+    public void setQ0(String q0) {
+        this.q0 = q0;
+    }
+
+    public String getF() {
+        return F;
+    }
+
+    public void setF(String f) {
+        F = f;
     }
 }
