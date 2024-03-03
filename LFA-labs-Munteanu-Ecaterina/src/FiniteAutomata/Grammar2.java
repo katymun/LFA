@@ -1,19 +1,17 @@
 package FiniteAutomata;
 
-import RegularGrammars.FiniteAutomaton;
-import RegularGrammars.Transition;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-public class Grammar {
+public class Grammar2 {
     private List<String> Vn;
     private List<String> Vt;
     private List<String> P;
     private String S;
 
-    public Grammar(List<String> Vn, List<String> Vt, List<String> P, String S) {
+    public Grammar2(List<String> Vn, List<String> Vt, List<String> P, String S) {
         this.Vt = Vt;
         this.Vn = Vn;
         this.P = P;
@@ -21,66 +19,83 @@ public class Grammar {
     }
 
     public Type getType() {
-        boolean type0 = true;
         boolean type1 = true;
         boolean type2 = true;
-        boolean type3 = true;
+        boolean undefined = false;
 
-        List<String> productions = getAllProductions();
+        List<String> productions = getP();
+        for (String production : productions) {
+            String[] parts = production.split("->");
+            if (parts.length == 1) {
+                if (parts[0].isEmpty() || countNonTerminals(parts[0]) == 0) {
+                    undefined = true;
+                }
+            }
+        }
+
+        if (undefined) {
+            return Type.UNDEFINED;
+        }
+
+        if (isLeftRightRegularGrammar()) {
+            return Type.TYPE_3;
+        }
+
         for (String production : productions) {
             String[] parts = production.split("->");
             String leftSide = parts[0];
             String rightSide = parts[1];
-            if (leftSide != null && leftSide != "" && countNonTerminals(leftSide) >= 1) {
-                if (rightSide != null && rightSide != "" && leftSide.length() <= rightSide.length()) {
-                    if (leftSide.length() == 1 && countNonTerminals(rightSide) >= 2) {
-                        if (countNonTerminals(rightSide) != 0 && countNonTerminals(rightSide) != 1) {
-                            type3 = false;
-                        }
-                    } else {
-                        type2 = false;
-                    }
-                } else {
-                    type1 = false;
-                }
-            } else {
-                type0 = false;
+
+            if (leftSide.isEmpty() || countNonTerminals(leftSide) == 0) {
+                return Type.UNDEFINED;
+            }
+
+            if (leftSide.length() != 1 || countNonTerminals(leftSide) != 1) {
+                type2 = false;
+            } else if (leftSide.length() > rightSide.length()) {
+                type1 = false;
             }
         }
-        if (type3) {
-            return Type.TYPE_3;
-        } else if (type2) {
+
+        if (type2) {
             return Type.TYPE_2;
         } else if (type1) {
             return Type.TYPE_1;
-        } else if (type0) {
-            return Type.TYPE_0;
         } else {
-            return Type.UNDEFINED;
+            return Type.TYPE_0;
         }
     }
 
     public boolean isLeftRightRegularGrammar() {
-        // return false if it isn't only left-regular or right-regular
         boolean rightRegular = false;
         boolean leftRegular = false;
-        List<String> productions = getAllProductions();
+        List<String> productions = getP();
         for (String production : productions) {
             String[] parts = production.split("->");
             String leftSide = parts[0];
+
+            if (leftSide.length() != 1 || countNonTerminals(leftSide) != 1) {
+                return false;
+            }
+
             String rightSide = parts[1];
             if (rightSide.length() == 1 && countNonTerminals(rightSide) == 1) {
                 return false;
             }
+
             if (rightSide.length() > 1 && countNonTerminals(rightSide) == 1) {
-                String[] sides = rightSide.split();
-                if (Vn.contains(String.valueOf(nonTerminal)) && Vt.contains(String.valueOf(terminal))) {
-                    // Found a production in right-regular form
-                    return true;
+                String nonTerminal = extractNonTerminal(rightSide);
+                String[] sides = rightSide.split(nonTerminal);
+
+                if (sides.length == 1) {
+                    rightRegular = true;
+                } else if (!sides[1].isEmpty() && sides[0].isEmpty()) {
+                    leftRegular = true;
                 }
             }
         }
-        return false;
+
+        return rightRegular != leftRegular;
     }
 
     public String extractNonTerminal(String input) {
@@ -144,18 +159,44 @@ public class Grammar {
         return allProductions;
     }
 
+    public static Grammar2 convertToRegularGrammar(FiniteAutomaton2 automaton) {
+        List<String> Vn = new ArrayList<>(automaton.getQ());
+        List<String> Vt = new ArrayList<>(automaton.getSigma());
+        List<String> P = new ArrayList<>();
 
-    public FiniteAutomaton toFiniteAutomaton() {
+        // Iterate through each initial state in q0
+        for (String initialState : automaton.getQ0()) {
+            String S = initialState; // Start symbol is the initial state
+
+            for (Transition2 transition : automaton.getDelta()) {
+                String fromState = transition.getFromState();
+                String symbol = transition.getSymbol();
+                String toState = transition.getToState();
+
+                if (automaton.getF().contains(toState)) {
+                    // If the destination state is a final state, add productions accordingly
+                    P.add(fromState + "->" + symbol + toState);
+                } else {
+                    P.add(fromState + "->" + symbol + toState);
+                }
+            }
+        }
+
+        return new Grammar2(Vn, Vt, P, automaton.getQ0().get(0)); // Return a Grammar2 instance
+    }
+
+
+    public FiniteAutomaton2 convertToFiniteAutomaton() {
         List<String> Sigma = new ArrayList<>(Vt);
 
         List<String> Q = new ArrayList<>(Vn);
         Q.addAll(Vn);
         Q.add("X");
 
-        String q0 = S;
-        String F = "X";
+        List<String> q0 = Arrays.asList(S);
+        List<String> F = Arrays.asList("X");
 
-        List<Transition> delta = new ArrayList<>();
+        List<Transition2> delta = new ArrayList<>();
         for (String production : P) {
             String[] parts = production.split("->");
             String leftSide = parts[0];
@@ -163,14 +204,14 @@ public class Grammar {
 
             if (rightSide.length() == 1 && Vt.contains(rightSide)) {
                 // A → a
-                delta.add(new Transition(leftSide, rightSide, F));
+                delta.add(new Transition2(leftSide, rightSide, F.get(0)));
             } else if (rightSide.length() > 1) {
                 // A → aB
-                delta.add(new Transition(leftSide, String.valueOf(rightSide.charAt(0)),
+                delta.add(new Transition2(leftSide, String.valueOf(rightSide.charAt(0)),
                         String.valueOf(rightSide.charAt(1))));
             }
         }
-        return new FiniteAutomaton(Q, Sigma, delta, q0, F);
+        return new FiniteAutomaton2(Q, Sigma, delta, q0, F);
     }
 
     public List<String> getVn() {
@@ -203,5 +244,15 @@ public class Grammar {
 
     public void setS(String s) {
         S = s;
+    }
+
+    @Override
+    public String toString() {
+        return "Grammar2{" +
+                "Vn=" + Vn +
+                ", Vt=" + Vt +
+                ", P=" + P +
+                ", S='" + S + '\'' +
+                '}';
     }
 }

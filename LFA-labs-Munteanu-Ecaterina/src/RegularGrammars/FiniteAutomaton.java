@@ -1,5 +1,9 @@
 package RegularGrammars;
 
+import FiniteAutomata.FiniteAutomaton2;
+import FiniteAutomata.Grammar2;
+import FiniteAutomata.Transition2;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -11,6 +15,7 @@ public class FiniteAutomaton {
     private List<Transition> delta;
     private String q0;
     private String F;
+
 
     public FiniteAutomaton(List<String> Q, List<String> Sigma, List<Transition> delta, String q0, String F) {
         this.Q = Q;

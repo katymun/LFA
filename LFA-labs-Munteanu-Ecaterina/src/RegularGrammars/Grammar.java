@@ -1,5 +1,7 @@
 package RegularGrammars;
 
+import FiniteAutomata.Type;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -106,4 +108,6 @@ public class Grammar {
     public void setS(String s) {
         S = s;
     }
+
+
 }
