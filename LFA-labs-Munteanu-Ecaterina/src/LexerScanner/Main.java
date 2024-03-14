@@ -21,7 +21,7 @@ public class Main {
 
             System.out.println("Tokens: " + tokens);
 
-            inputBuilder.setLength(0); // Clear the inputBuilder for the next statement
+            inputBuilder.setLength(0);
 
             System.out.print("\nconsole> ");
         }
