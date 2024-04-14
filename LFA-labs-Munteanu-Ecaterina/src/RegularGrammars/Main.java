@@ -11,7 +11,7 @@ public class Main {
         List<String> Vt = Arrays.asList("a", "b");
         List<String> P = Arrays.asList("S->aA", "A->bS", "S->aB", "B->aC",
                 "C->a", "C->bS");
-        Grammar grammar = new Grammar(Vn, Vt, P, "S");
+        Grammar0 grammar = new Grammar0(Vn, Vt, P, "S");
 
         for (int i = 0; i < nrWords; i++) {
             String generatedWord = grammar.generateString();

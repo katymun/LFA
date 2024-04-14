@@ -1,18 +1,16 @@
 package RegularGrammars;
 
-import FiniteAutomata.Type;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class Grammar {
+public class Grammar0 {
     private List<String> Vn;
     private List<String> Vt;
     private List<String> P;
     private String S;
 
-    public Grammar(List<String> Vn, List<String> Vt, List<String> P, String S) {
+    public Grammar0(List<String> Vn, List<String> Vt, List<String> P, String S) {
         this.Vt = Vt;
         this.Vn = Vn;
         this.P = P;
