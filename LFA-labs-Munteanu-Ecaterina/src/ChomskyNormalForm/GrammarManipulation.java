@@ -25,66 +25,99 @@ public class GrammarManipulation {
         return grammar;
     }
     public void transformToStructuredForm() {
-        Set<String> newProductions = new LinkedHashSet<>();
-        Set<String> newNonTerminals = new LinkedHashSet<>(grammar.getVn()); // Copy existing non-terminals
+        List<String> newSymbols = getNewSymbols();
 
-        // Handle each production
+        Set<String> newP = new HashSet<>();
+        int index = 0;
+        Set<String> newRightSides = new HashSet<>();
+        for (String terminal : grammar.getVt()) {
+            grammar.addNonTerminal(newSymbols.get(index));
+            grammar.addProduction(newSymbols.get(index), terminal);
+            newP.add(newSymbols.get(index) + "->" + terminal);
+            newRightSides.add(terminal);
+            index++;
+        }
+        Set<String> copyNewP = new HashSet<>(newP);
         for (String production : grammar.getP()) {
             String[] parts = production.split("->");
-            String lhs = parts[0].trim();
-            String rhs = parts[1].trim();
-
-            // Directly handle terminal productions
-            if (rhs.length() == 1 && grammar.getVt().contains(rhs)) {
-                newProductions.add(lhs + "->" + rhs);
-                continue;
+            String newPart = parts[1];
+            for (String prod : copyNewP) {
+                String[] symbols = prod.split("->");
+                if (parts[1].contains(symbols[1]) && !parts[0].equals(symbols[0]) && parts[1].length() > 1) {
+                    newPart = newPart.replace(symbols[1], symbols[0]);
+                }
             }
+            newP.add(parts[0] + "->" + newPart);
+        }
+        grammar.setP(new ArrayList<>(newP));
 
-            // Transform productions to X->YZ form
-            if (rhs.length() >= 2) {
-                String newLhs = lhs;
-                String rest = rhs;
-                int i = 0;
-                while (rest.length() > 2) {
-                    if (grammar.getVt().contains(String.valueOf(rest.charAt(0))) && i == 0) {
-                        // Handle terminal followed by non-terminal
-                        String newNonTerminal = "N" + (newNonTerminals.size() + 1);
-                        newNonTerminals.add(newNonTerminal);
-                        newProductions.add(newLhs + "->" + rest.charAt(0) + newNonTerminal);
-                        newLhs = newNonTerminal;
-                        rest = rest.substring(1);
-                        i++;
-                    } else {
-                        // Handle non-terminal followed by non-terminal
-                        String newNonTerminal = "N" + (newNonTerminals.size() + 1);
-                        newNonTerminals.add(newNonTerminal);
-                        newProductions.add(newLhs + "->" + rest.substring(0, 1) + newNonTerminal);
-                        newLhs = newNonTerminal;
-                        rest = rest.substring(1);
+
+
+
+        while (true) {
+            Set<String> P = new HashSet<>();
+            String newProd = null;
+            for (String production : grammar.getP()) {
+                String[] parts = production.split("->");
+                if (parts[1].length() > 2) {
+                    newProd = String.valueOf(parts[1].charAt(0)) + String.valueOf(parts[1].charAt(1));
+                    P.add(newSymbols.get(index) + "->" + newProd);
+                    break;
+                }
+            }
+            if (newProd != null) {
+                for (String production : grammar.getP()) {
+                    String[] parts = production.split("->");
+                    if (parts[1].contains(newProd) && parts[1].length() > 2) {
+                        parts[1] = parts[1].replace(newProd, newSymbols.get(index));
                     }
+                    P.add(parts[0] + "->" + parts[1]);
                 }
-                // Last two characters should form a valid production
-                if (rest.length() == 2 && grammar.getVt().contains(rest.substring(1))) {
-                    String newNonTerminal = "N" + (newNonTerminals.size() + 1);
-                    newNonTerminals.add(newNonTerminal);
-                    newProductions.add(newLhs + "->" + rest.charAt(0) + newNonTerminal);
-                    newProductions.add(newNonTerminal + "->" + rest.charAt(1));
-                } else {
-                    newProductions.add(newLhs + "->" + rest);
-                }
+                index++;
+                grammar.setP(new ArrayList<>(P));
+            } else {
+                break;
             }
         }
 
-        // Update grammar with new productions and non-terminals
-        grammar.setVn(new ArrayList<>(newNonTerminals));
-        grammar.setP(new ArrayList<>(newProductions));
+
+//        for (String production : P) {
+//            String[] parts = production.split("->");
+//            if (parts[1].length() > 2)  {
+//
+//            } else {
+//
+//            }
+//        }
     }
 
-
+    private List<String> getNewSymbols() {
+        List<String> newSymbols = new ArrayList<>();
+        newSymbols.add("N");
+        newSymbols.add("M");
+        newSymbols.add("K");
+        newSymbols.add("L");
+        newSymbols.add("J");
+        newSymbols.add("H");
+        newSymbols.add("G");
+        newSymbols.add("F");
+        newSymbols.add("P");
+        newSymbols.add("Y");
+        newSymbols.add("W");
+        newSymbols.add("Q");
+        newSymbols.add("T");
+        newSymbols.add("O");
+        newSymbols.add("E");
+        newSymbols.add("X");
+        newSymbols.add("Z");
+        newSymbols.add("R");
+        newSymbols.add("V");
+        return newSymbols;
+    }
 
     public void eliminateNonProductive() {
-        List<String> productiveSymbols = new ArrayList<>();
-        List<String> nonProductiveSymbols = new ArrayList<>();
+        Set<String> productiveSymbols = new HashSet<>();
+        Set<String> nonProductiveSymbols = new HashSet<>();
         for (String symbol : grammar.getVn()) {
             for (String production : grammar.getP()) {
                 String[] parts = production.split("->");
@@ -99,7 +132,7 @@ public class GrammarManipulation {
                 nonProductiveSymbols.add(symbol);
             }
         }
-        List<String> newP = new ArrayList<>();
+        Set<String> newP = new HashSet<>();
         for (String symbol : nonProductiveSymbols) {
             for (String production : grammar.getP()) {
                 if (!production.contains(symbol)) {
@@ -107,7 +140,7 @@ public class GrammarManipulation {
                 }
             }
         }
-        grammar.setP(newP);
+        grammar.setP(new ArrayList<>(newP));
     }
 
     public void eliminateRenaming() {
