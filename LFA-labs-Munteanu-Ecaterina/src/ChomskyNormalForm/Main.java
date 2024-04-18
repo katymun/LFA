@@ -6,7 +6,7 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
 
-        List<String> vn = Arrays.asList("S", "A", "B", "C", "D");
+        List<String> vn = Arrays.asList("S", "A", "B", "C");
         List<String> vt = Arrays.asList("a", "b");
         List<String> p = Arrays.asList(
                 "S->abAB",
@@ -28,7 +28,6 @@ public class Main {
 
         System.out.println("\nGrammar after doing something:");
         GrammarManipulation tool = new GrammarManipulation();
-
         System.out.println(tool.convertToCNF(grammar));
     }
 

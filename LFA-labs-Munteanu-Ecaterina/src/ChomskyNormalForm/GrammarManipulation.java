@@ -27,16 +27,20 @@ public class GrammarManipulation {
     public void transformToStructuredForm() {
         List<String> newSymbols = getNewSymbols();
 
+        Set<String> newVn = new HashSet<>(grammar.getVn());
         Set<String> newP = new HashSet<>();
         int index = 0;
         Set<String> newRightSides = new HashSet<>();
         for (String terminal : grammar.getVt()) {
-            grammar.addNonTerminal(newSymbols.get(index));
-            grammar.addProduction(newSymbols.get(index), terminal);
+            newVn.add(newSymbols.get(index));
+//            grammar.addProduction(newSymbols.get(index), terminal);
             newP.add(newSymbols.get(index) + "->" + terminal);
             newRightSides.add(terminal);
             index++;
         }
+
+        grammar.setVn(new ArrayList<>(newVn));
+
         Set<String> copyNewP = new HashSet<>(newP);
         for (String production : grammar.getP()) {
             String[] parts = production.split("->");
@@ -51,9 +55,6 @@ public class GrammarManipulation {
         }
         grammar.setP(new ArrayList<>(newP));
 
-
-
-
         while (true) {
             Set<String> P = new HashSet<>();
             String newProd = null;
@@ -62,6 +63,7 @@ public class GrammarManipulation {
                 if (parts[1].length() > 2) {
                     newProd = String.valueOf(parts[1].charAt(0)) + String.valueOf(parts[1].charAt(1));
                     P.add(newSymbols.get(index) + "->" + newProd);
+                    newVn.add(newSymbols.get(index));
                     break;
                 }
             }
@@ -79,16 +81,7 @@ public class GrammarManipulation {
                 break;
             }
         }
-
-
-//        for (String production : P) {
-//            String[] parts = production.split("->");
-//            if (parts[1].length() > 2)  {
-//
-//            } else {
-//
-//            }
-//        }
+        grammar.setVn(new ArrayList<>(newVn));
     }
 
     private List<String> getNewSymbols() {
@@ -132,15 +125,15 @@ public class GrammarManipulation {
                 nonProductiveSymbols.add(symbol);
             }
         }
-        Set<String> newP = new HashSet<>();
+        List<String> newP = grammar.getP();
         for (String symbol : nonProductiveSymbols) {
             for (String production : grammar.getP()) {
-                if (!production.contains(symbol)) {
-                    newP.add(production);
+                if (production.contains(symbol)) {
+                    newP.remove(production);
                 }
             }
         }
-        grammar.setP(new ArrayList<>(newP));
+        grammar.setP(newP);
     }
 
     public void eliminateRenaming() {

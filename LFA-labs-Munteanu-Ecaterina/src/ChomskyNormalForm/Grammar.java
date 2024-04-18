@@ -1,7 +1,6 @@
 package ChomskyNormalForm;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Grammar {
     private List<String> Vn;
@@ -86,5 +85,18 @@ public class Grammar {
 
     public void setS(String s) {
         S = s;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Grammar grammar = (Grammar) o;
+        return Objects.equals(Vn, grammar.Vn) && Objects.equals(Vt, grammar.Vt) && Objects.equals(P, grammar.P) && Objects.equals(S, grammar.S);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Vn, Vt, P, S);
     }
 }
