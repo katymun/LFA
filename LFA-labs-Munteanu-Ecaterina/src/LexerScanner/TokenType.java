@@ -10,5 +10,8 @@ public enum TokenType {
     RPAREN, // )
     PRINT,  // print keyword
     COMMA,  // ,
-    STRING  // String literal
+    EOF,    // End of file (program)
+    NUMBER,
+    STRING,  // String literal
+    PROGRAM
 }

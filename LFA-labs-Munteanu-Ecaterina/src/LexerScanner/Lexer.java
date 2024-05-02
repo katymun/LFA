@@ -4,116 +4,115 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Lexer {
-    private final String text;
-    private int pos;
-    private char currentChar;
+    private String input;
+    private int position;
+    private List<Token> tokens;
 
-    public Lexer(String text) {
-        this.text = text;
-        pos = 0;
-        currentChar = text.charAt(pos);
-    }
-
-    private void advance() {
-        pos++;
-        if (pos < text.length()) {
-            currentChar = text.charAt(pos);
-        } else {
-            currentChar = '\0';
-        }
-    }
-
-    private void skipWhitespace() {
-        while (currentChar != '\0' && Character.isWhitespace(currentChar)) {
-            advance();
-        }
-    }
-
-    private String getIdent() {
-        StringBuilder result = new StringBuilder();
-        while (currentChar != '\0' && Character.isLetterOrDigit(currentChar)) {
-            result.append(currentChar);
-            advance();
-        }
-        return result.toString();
-    }
-
-    private Token getNextToken() {
-        while (currentChar != '\0') {
-            if (Character.isWhitespace(currentChar)) {
-                skipWhitespace();
-                continue;
-            }
-
-            if (Character.isLetter(currentChar)) {
-                String ident = getIdent();
-                switch (ident) {
-                    case "var":
-                        return new Token(TokenType.VAR, ident);
-                    case "print":
-                        return new Token(TokenType.PRINT, ident);
-                    default:
-                        return new Token(TokenType.ID, ident);
-                }
-            }
-
-            if (Character.isDigit(currentChar)) {
-                StringBuilder num = new StringBuilder();
-                while (currentChar != '\0' && Character.isDigit(currentChar)) {
-                    num.append(currentChar);
-                    advance();
-                }
-                return new Token(TokenType.ID, num.toString());
-            }
-
-            switch (currentChar) {
-                case '=':
-                    advance();
-                    return new Token(TokenType.ASSIGN, "=");
-                case ';':
-                    advance();
-                    return new Token(TokenType.SEMI, ";");
-                case '(':
-                    advance();
-                    return new Token(TokenType.LPAREN, "(");
-                case ')':
-                    advance();
-                    return new Token(TokenType.RPAREN, ")");
-                case '+':
-                case '-':
-                case '*':
-                case '/':
-                    String op = String.valueOf(currentChar);
-                    advance();
-                    return new Token(TokenType.OP, op);
-                case ',':
-                    advance();
-                    return new Token(TokenType.COMMA, ",");
-                case '"':
-                    advance();
-                    StringBuilder str = new StringBuilder();
-                    while (currentChar != '"' && currentChar != '\0') {
-                        str.append(currentChar);
-                        advance();
-                    }
-                    advance();
-                    return new Token(TokenType.STRING, str.toString());
-                default:
-                    throw new IllegalArgumentException("Invalid character: " + currentChar);
-            }
-        }
-
-        return new Token(TokenType.SEMI, null);
+    public Lexer(String input) {
+        this.input = input;
+        this.position = 0;
+        this.tokens = new ArrayList<>();
+        tokenize();
     }
 
     public List<Token> tokenize() {
-        List<Token> tokens = new ArrayList<>();
-        Token token = getNextToken();
-        while (token.type != TokenType.SEMI) {
-            tokens.add(token);
-            token = getNextToken();
+        while (position < input.length()) {
+            char currentChar = input.charAt(position);
+            if (Character.isLetter(currentChar)) {
+                tokenizeWord();
+            } else if (Character.isDigit(currentChar)) {
+                tokenizeNumber();
+            } else if (currentChar == '=') {
+                tokens.add(new Token(TokenType.ASSIGN, "="));
+                position++;
+            } else if (currentChar == ';') {
+                tokens.add(new Token(TokenType.SEMI, ";"));
+                position++;
+            } else if (currentChar == '(') {
+                tokens.add(new Token(TokenType.LPAREN, "("));
+                position++;
+            } else if (currentChar == ')') {
+                tokens.add(new Token(TokenType.RPAREN, ")"));
+                position++;
+            } else if (currentChar == '+') {
+                tokens.add(new Token(TokenType.OP, "+"));
+                position++;
+            } else if (currentChar == '-') {
+                tokens.add(new Token(TokenType.OP, "-"));
+                position++;
+            } else if (currentChar == '*') {
+                tokens.add(new Token(TokenType.OP, "*"));
+                position++;
+            } else if (currentChar == '/') {
+                tokens.add(new Token(TokenType.OP, "/"));
+                position++;
+            } else if (currentChar == ',') {
+                tokens.add(new Token(TokenType.COMMA, ","));
+                position++;
+            } else if (currentChar == '"') {
+                tokenizeString();
+            } else if (Character.isWhitespace(currentChar)) {
+                position++;
+            } else {
+                // Invalid character
+                throw new RuntimeException("Invalid character: " + currentChar);
+            }
         }
-        tokens.add(token);
+        tokens.add(new Token(TokenType.EOF, ""));
         return tokens;
+    }
+
+    private void tokenizeWord() {
+        StringBuilder word = new StringBuilder();
+        while (position < input.length() && Character.isLetter(input.charAt(position))) {
+            word.append(input.charAt(position));
+            position++;
+        }
+        String wordStr = word.toString();
+        if (wordStr.equals("var")) {
+            tokens.add(new Token(TokenType.VAR, wordStr));
+        } else if (wordStr.equals("print")) {
+            tokens.add(new Token(TokenType.PRINT, wordStr));
+        } else {
+            tokens.add(new Token(TokenType.ID, wordStr));
+        }
+    }
+
+
+
+    private void tokenizeNumber() {
+        StringBuilder number = new StringBuilder();
+        while (position < input.length() && Character.isDigit(input.charAt(position))) {
+            number.append(input.charAt(position));
+            position++;
+        }
+        tokens.add(new Token(TokenType.NUMBER, number.toString()));
+    }
+
+    private void tokenizeString() {
+        StringBuilder str = new StringBuilder();
+        position++; // Skip the opening double quote
+        while (position < input.length() && input.charAt(position) != '"') {
+            str.append(input.charAt(position));
+            position++;
+        }
+        if (position < input.length() && input.charAt(position) == '"') {
+            position++; // Skip the closing double quote
+            tokens.add(new Token(TokenType.STRING, str.toString()));
+        } else {
+            throw new RuntimeException("Unterminated string literal");
+        }
+    }
+
+    public boolean hasMoreTokens() {
+        return position < tokens.size();
+    }
+
+    public Token getCurrentToken() {
+        return tokens.get(position);
+    }
+
+    public void advance() {
+        position++;
     }
 }

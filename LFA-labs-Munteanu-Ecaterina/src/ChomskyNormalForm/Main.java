@@ -22,6 +22,22 @@ public class Main {
         );
         String s = "S";
 
+//        List<String> vn = Arrays.asList("S", "A", "B", "C", "D", "X");
+//        List<String> vt = Arrays.asList("a", "b");
+//        List<String> p = Arrays.asList(
+//                "S->A",
+//                "A->aX",
+//                "A->bX",
+//                "X->ε",
+//                "X->BX",
+//                "X->b",
+//                "B->AD",
+//                "D->aD",
+//                "D->a",
+//                "C->Ca"
+//        );
+//        String s = "S";
+
         Grammar grammar = new Grammar(vn, vt, p, s);
         System.out.println("Original Grammar:");
         System.out.println(grammar);
